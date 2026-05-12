@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile data including biometric and preferences.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "gender": { "type": "string", "enum": ["male", "female"] },
+        "age": { "type": "number" },
+        "height": { "type": "number" },
+        "weight": { "type": "number" },
+        "profession": { "type": "string" },
+        "daily_posture": { "type": "string" },
+        "activity_level_non_gym": { "type": "string" },
+        "current_injuries": { "type": "string" },
+        "past_injuries": { "type": "string" },
+        "medical_conditions": { "type": "string" },
+        "medications": { "type": "string" },
+        "flexibility_limitations": { "type": "string" },
+        "chronic_pain": { "type": "string" },
+        "primary_goal": { "type": "string" },
+        "secondary_goal": { "type": "string" },
+        "timeline": { "type": "string" },
+        "event_objective": { "type": "string" },
+        "event_date": { "type": "string" },
+        "deep_motivation": { "type": "string" },
+        "past_obstacles": { "type": "string" },
+        "experience_level": { "type": "string" },
+        "past_sports": { "type": "string" },
+        "technical_mastery": { "type": "string" },
+        "disliked_exercises": { "type": "string" },
+        "favorite_exercises": { "type": "string" },
+        "training_location": { "type": "string" },
+        "home_equipment": { "type": "string" },
+        "days_per_week": { "type": "number" },
+        "max_duration_minutes": { "type": "number" },
+        "sleep_hours": { "type": "number" },
+        "sleep_quality": { "type": "number" },
+        "stress_level": { "type": "number" },
+        "current_dietary_habits": { "type": "string" },
+        "general_energy_level": { "type": "number" },
+        "subscription_tier": { "type": "string", "enum": ["free", "premium", "elite"] },
+        "promo_code_used": { "type": "string" },
+        "promo_code_applied_at": { "type": "string", "format": "date-time" },
+        "promo_code_duration": { "type": "number", "description": "Duration in months, 0 for unlimited" },
+        "subscription_status": { "type": "string", "enum": ["active", "canceled", "incomplete", "trialing", "past_due", "unpaid"] },
+        "stripe_customer_id": { "type": "string" },
+        "stripe_subscription_id": { "type": "string" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "PredefinedProgram": {
+      "title": "PredefinedProgram",
+      "description": "Static programs for free tier users.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "category": { "type": "string", "enum": ["weight_loss", "muscle_gain", "cardio", "abs"] },
+        "location": { "type": "string", "enum": ["gym", "home"] },
+        "content": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Messages between coach and client.",
+      "type": "object",
+      "properties": {
+        "sender_id": { "type": "string" },
+        "receiver_id": { "type": "string" },
+        "text": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" }
+      }
+    },
+    "PromoCode": {
+      "title": "PromoCode",
+      "description": "Promotional codes for discounts.",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "discount": { "type": "number" },
+        "duration": { "type": "number", "description": "Duration in months, 0 for unlimited" },
+        "active": { "type": "boolean" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Plan": {
+      "title": "Plan",
+      "description": "Generated workout or nutrition plan.",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["workout", "nutrition"] },
+        "content": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Package": {
+      "title": "Package",
+      "description": "Subscription packages/forfaits.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "string" },
+        "features": { "type": "array", "items": { "type": "string" } },
+        "tierLevel": { "type": "number", "description": "0=Free, 1=Premium, 2=Elite, 3=Coach" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Exercise": {
+      "title": "Exercise",
+      "description": "Predefined exercise for the exercise bank.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["chest", "back", "legs", "shoulders", "arms", "abs", "cardio"] },
+        "instructions": { "type": "string" },
+        "image_search_query": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document."
+    },
+    "/users/{userId}/plans/{planId}": {
+      "schema": "Plan",
+      "description": "User generated plans."
+    },
+    "/exercises/{exerciseId}": {
+      "schema": "Exercise",
+      "description": "Exercise bank."
+    },
+    "/packages/{packageId}": {
+      "schema": "Package",
+      "description": "Subscription packages."
+    }
+  }
+}

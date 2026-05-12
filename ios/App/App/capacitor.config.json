@@ -1,0 +1,10 @@
+{
+	"appId": "com.synapse.app",
+	"appName": "Synapse",
+	"webDir": "dist",
+	"bundledWebRuntime": false,
+	"server": {
+		"androidScheme": "https"
+	},
+	"packageClassList": []
+}

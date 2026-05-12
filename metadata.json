@@ -1,0 +1,7 @@
+{
+  "name": "ENDORFIT",
+  "description": "Fitness & Pharmacie - Entraînement & Bien-Être. Votre expert en optimisation physique et nutritionnelle.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

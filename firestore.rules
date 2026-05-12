@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.uid == "v3tg7cntzDUFceZtq4ZUbazeOnz2" || 
+        (request.auth.token.email != null && request.auth.token.email == "charlesjeanbourget@gmail.com")
+      );
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    function isValidUserProfile(data) {
+      return data.keys().hasAny(['name', 'gender', 'age', 'height', 'weight']) &&
+             data.keys().hasOnly([
+               'name', 'gender', 'age', 'height', 'weight', 'profession', 'daily_posture',
+               'activity_level_non_gym', 'current_injuries', 'past_injuries', 'medical_conditions',
+               'medications', 'flexibility_limitations', 'chronic_pain', 'primary_goal',
+               'secondary_goal', 'timeline', 'event_objective', 'event_date', 'target_time',
+               'deep_motivation', 'past_obstacles', 'experience_level', 'past_sports',
+               'technical_mastery', 'disliked_exercises', 'favorite_exercises', 'training_location',
+               'home_equipment', 'days_per_week', 'max_duration_minutes', 'dietary_preference',
+               'fasting_duration', 'is_fasting', 'fasting_start_time', 'sleep_hours',
+               'sleep_quality', 'stress_level', 'current_dietary_habits', 'general_energy_level',
+               'subscription_tier', 'subscription_status', 'stripe_customer_id', 'stripe_subscription_id',
+               'promo_code_used', 'promo_code_applied_at', 'promo_code_duration', 'updated_at', 'created_at',
+               'daily_calorie_goal', 'points', 'level', 'badges', 'current_week_start', 'exercise_progress',
+               'id', 'email', 'first_name', 'last_name', 'fitness_goal', 'fitness_level', 'weight_kg', 'height_cm',
+               'pharmacy_banner', 'pharmacy_owner', 'daily_calories_log', 'daily_food_entries',
+               'burned_calories_log', 'extra_activities', 'consecutive_days', 'last_workout_date',
+               'weight_tracking', 'progress_photos',
+               // Potential French keys added by AI coach
+               'blessures', 'objectifs', 'preferences', 'niveau', 'equipement', 'disponibilite',
+               'frequence', 'duree', 'restrictions', 'allergies', 'historique', 'remarques', 'notes',
+               'objectif', 'blessure', 'preference', 'restriction', 'allergie', 'remarque', 'note',
+               // New nutrition fields
+               'food_allergies', 'liked_foods', 'disliked_foods', 'meals_per_day', 'cooking_time_available'
+             ]);
+    }
+
+    function isValidPlan(data) {
+      return data.keys().hasAll(['type', 'content', 'created_at']) &&
+             data.type in ['workout', 'nutrition'] &&
+             data.content is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if (isOwner(userId) || isAdmin()) && isValidUserProfile(request.resource.data);
+      allow update: if (isOwner(userId) && isValidUserProfile(request.resource.data)) || 
+                       (isAdmin() && isValidUserProfile(request.resource.data));
+      allow delete: if isAdmin();
+      
+      match /plans/{planId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidPlan(request.resource.data);
+        allow update: if (isOwner(userId) || isAdmin()) && isValidPlan(request.resource.data);
+        allow delete: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    match /chats/{chatId} {
+      allow read: if isAdmin() || (isAuthenticated() && (
+        ('participants' in resource.data && request.auth.uid in resource.data.participants) || 
+        (resource.data.sender_id == request.auth.uid || resource.data.receiver_id == request.auth.uid)
+      ));
+      allow create: if isAdmin() || (isAuthenticated() && (
+        ('participants' in request.resource.data && request.auth.uid in request.resource.data.participants) || 
+        (request.resource.data.sender_id == request.auth.uid)
+      ));
+      allow update: if isAdmin() || (isAuthenticated() && (
+        ('participants' in resource.data && request.auth.uid in resource.data.participants) || 
+        (resource.data.sender_id == request.auth.uid || resource.data.receiver_id == request.auth.uid)
+      ));
+      allow delete: if isAdmin();
+    }
+
+    match /promo_codes/{codeId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        isAuthenticated() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['current_uses']) &&
+        request.resource.data.current_uses == (resource.data.keys().hasAll(['current_uses']) ? resource.data.current_uses : 0) + 1
+      );
+    }
+
+    match /predefined_programs/{programId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /exercises/{exerciseId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /packages/{packageId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}
